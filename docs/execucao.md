@@ -7,7 +7,8 @@ máquina.
 
 Antes de começar, instale:
 
-- Node.js 20 ou mais novo (o projeto usa `node --watch` e ES Modules).
+- Node.js 20.11 ou mais novo (recomendado: 22). O projeto usa `node --watch`,
+  ES Modules e `import.meta.dirname`.
 - pnpm. A versão fica fixada no `package.json`, e o pnpm baixa a versão certa
   sozinho.
 - PostgreSQL rodando localmente, com um usuário que possa criar bancos.

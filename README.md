@@ -6,7 +6,7 @@ livros. A API também recebe e serve a imagem de capa de cada livro.
 
 ## Stack
 
-- Node.js 20 ou mais novo, com ES Modules
+- Node.js 20.11 ou mais novo (recomendado: 22), com ES Modules
 - Express 5
 - PostgreSQL com o driver `pg` (SQL escrito à mão, sem ORM)
 - Zod para validação

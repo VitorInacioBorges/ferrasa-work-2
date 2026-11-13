@@ -7,10 +7,10 @@
     "start": "node src/server.js",
     "db:setup": "node scripts/db-setup.js .env",
     "db:setup:test": "node scripts/db-setup.js .env.test",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
-    "test:unit": "NODE_OPTIONS=--experimental-vm-modules jest tests/unit",
-    "test:integration": "NODE_OPTIONS=--experimental-vm-modules jest tests/integration --runInBand",
-    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand --coverage"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/unit",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js tests/integration --runInBand",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand --coverage"
   },
   "keywords": [],
   "author": "",
@@ -36,5 +36,8 @@
     "@jest/globals": "^30.5.2",
     "jest": "^30.5.2",
     "supertest": "^7.3.2"
+  },
+  "engines": {
+    "node": ">=20.11"
   }
 }

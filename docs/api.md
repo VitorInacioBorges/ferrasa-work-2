@@ -179,6 +179,8 @@ Location: /api/authors/1
 
 - `GET /api/books` aceita `page`, `limit` e os filtros `title`, `genre` e
   `authorId`. Um `authorId` sem livros devolve uma lista vazia, não um 404.
+  Filtros vazios, como `?authorId=` vindo de um formulário com "todos os
+  autores", são ignorados.
 - `PUT` substitui todos os campos: envie o livro completo. O livro pode
   manter o próprio ISBN; o erro 409 só acontece se o ISBN for de outro livro.
 - `DELETE` também apaga a capa do disco.
@@ -219,11 +221,14 @@ A resposta traz o livro atualizado, com a nova `coverUrl`.
 | ------ | --------------------- | ---------------------------------------------------------------- |
 | `400`  | `VALIDATION_ERROR`    | Corpo, id ou query string inválidos. Veja `details`.             |
 | `400`  | `INVALID_JSON`        | O corpo não é um JSON válido.                                    |
-| `400`  | `INVALID_FILE`        | Upload sem arquivo, com formato não aceito ou fora do campo `cover`. |
+| `400`  | `INVALID_FILE`        | Upload sem arquivo, com formato não aceito, fora do campo `cover` ou com corpo multipart malformado. |
+| `400`  | `BAD_REQUEST`         | Requisição malformada, como um caractere mal codificado na URL.  |
 | `404`  | `NOT_FOUND`           | O autor ou o livro não existe.                                   |
 | `404`  | `ROUTE_NOT_FOUND`     | O caminho não existe na API.                                     |
 | `409`  | `ISBN_ALREADY_EXISTS` | O ISBN já pertence a outro livro.                                |
 | `413`  | `FILE_TOO_LARGE`      | A imagem passa do tamanho máximo.                                |
+| `413`  | `PAYLOAD_TOO_LARGE`   | O corpo JSON passa de 100 KB.                                    |
+| `415`  | `UNSUPPORTED_MEDIA_TYPE` | O corpo usa um charset não suportado (use UTF-8).             |
 | `422`  | `AUTHOR_NOT_FOUND`    | O `authorId` enviado não corresponde a nenhum autor.             |
 | `500`  | `INTERNAL_ERROR`      | Erro inesperado, como o banco fora do ar. Os detalhes ficam só no log do servidor. |
 

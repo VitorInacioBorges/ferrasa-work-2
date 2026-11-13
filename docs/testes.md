@@ -1,6 +1,6 @@
 # Testes
 
-O projeto usa Jest para testes unitários e de integração. Todo o código foi
+O projeto usa Jest para testes unitários e de integração. O código foi
 escrito com TDD: primeiro o teste que falha, depois o código mínimo para ele
 passar.
 
@@ -16,9 +16,9 @@ passar.
 Os testes de integração precisam do banco de teste configurado. Veja
 [Como executar](execucao.md#crie-os-bancos-de-dados).
 
-O Jest roda com ES Modules nativos, por isso os scripts definem
-`NODE_OPTIONS=--experimental-vm-modules`. Nos testes, importe `jest`, `test`
-e `expect` de `@jest/globals`.
+O Jest roda com ES Modules nativos, por isso os scripts chamam o Jest com
+`node --experimental-vm-modules`. Esse formato funciona no Linux, no macOS e
+no Windows. Nos testes, importe `jest`, `test` e `expect` de `@jest/globals`.
 
 ## Estratégia
 
@@ -83,9 +83,20 @@ cobertura ficar abaixo disso, `pnpm test:coverage` falha.
 
 ## Como o TDD aparece no histórico
 
-Cada comportamento entrou em dois commits: um `test:` com o teste falhando e
-um `feat:` com o código que o faz passar. Para ver a sequência, rode:
+As camadas (erros, ambiente, models, middlewares, services, controllers,
+repositories e o app) entraram em pares de commits: um `test:` com o teste
+falhando e um `feat:` com o código que o faz passar. Para ver a sequência,
+rode:
 
 ```bash
 git log --oneline --reverse
 ```
+
+Dois commits `test:` não têm um `feat:` logo depois: os testes de ponta a
+ponta dos endpoints de livros e os de upload, cascata e banco fora do ar.
+Eles testam comportamento que os testes unitários das camadas já tinham
+guiado e passaram na primeira execução. Funcionam como testes de regressão
+da API completa.
+
+Depois da revisão de código, os problemas encontrados entraram da mesma forma:
+um commit `test:` que reproduz cada falha e um commit `fix:` que a corrige.
