@@ -1,5 +1,6 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, test } from '@jest/globals';
+import { afterAll, beforeAll, beforeEach, describe, expect, jest, test } from '@jest/globals';
 import { applySchema } from '../../scripts/applySchema.js';
+import { createDb } from '../../src/db.js';
 import { createTestDb, loadTestEnv, resetDb } from '../helpers/testDb.js';
 
 let db;
@@ -60,6 +61,28 @@ describe('database schema', () => {
     const { rows } = await db.query('SELECT created_at, updated_at FROM authors');
     expect(rows[0].created_at).toBeInstanceOf(Date);
     expect(rows[0].updated_at).toBeInstanceOf(Date);
+  });
+});
+
+describe('connection pool', () => {
+  async function waitFor(condition, timeoutMs = 3000) {
+    const start = Date.now();
+    while (!condition()) {
+      if (Date.now() - start > timeoutMs) throw new Error('timeout esperando condição');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+  }
+
+  test('pool survives a terminated idle connection and logs the error', async () => {
+    const logger = { error: jest.fn() };
+    const victim = createDb(loadTestEnv(), { logger });
+    const { rows } = await victim.query('SELECT pg_backend_pid() AS pid');
+
+    await db.query('SELECT pg_terminate_backend($1)', [rows[0].pid]);
+    await waitFor(() => logger.error.mock.calls.length > 0);
+
+    await expect(victim.query('SELECT 1 AS ok')).resolves.toMatchObject({ rows: [{ ok: 1 }] });
+    await victim.close();
   });
 });
 

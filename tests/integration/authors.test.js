@@ -207,4 +207,54 @@ describe('app', () => {
 
     expect(response.headers['access-control-allow-origin']).toBe('http://localhost:5173');
   });
+
+  test('CORS exposes the Location header to the browser', async () => {
+    const response = await request(ctx.app)
+      .post('/api/authors')
+      .set('Origin', 'http://localhost:5173')
+      .send(validAuthor());
+
+    expect(response.headers['access-control-expose-headers']).toMatch(/Location/);
+  });
+
+  test('JSON body over the size limit → 413 PAYLOAD_TOO_LARGE', async () => {
+    const response = await request(ctx.app)
+      .post('/api/authors')
+      .send({ name: 'a'.repeat(200 * 1024), nationality: 'Brasileira' });
+
+    expect(response.status).toBe(413);
+    expect(response.body.error.code).toBe('PAYLOAD_TOO_LARGE');
+  });
+
+  test('unsupported JSON charset → 415 UNSUPPORTED_MEDIA_TYPE', async () => {
+    const response = await request(ctx.app)
+      .post('/api/authors')
+      .set('Content-Type', 'application/json; charset=latin1')
+      .send('{"name":"Ana","nationality":"Brasileira"}');
+
+    expect(response.status).toBe(415);
+    expect(response.body.error.code).toBe('UNSUPPORTED_MEDIA_TYPE');
+  });
+
+  test('badly encoded path parameter → 400 BAD_REQUEST', async () => {
+    const response = await request(ctx.app).get('/api/authors/%E0%A4%A');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('BAD_REQUEST');
+  });
+
+  test('NUL byte in filter → 400 VALIDATION_ERROR', async () => {
+    const response = await request(ctx.app).get('/api/authors?name=%00');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  test('empty filters from a form are ignored', async () => {
+    await createAuthor(ctx.app);
+
+    const response = await request(ctx.app).get('/api/books?title=&genre=&authorId=');
+
+    expect(response.status).toBe(200);
+  });
 });

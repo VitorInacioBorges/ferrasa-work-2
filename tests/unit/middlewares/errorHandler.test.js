@@ -90,6 +90,28 @@ describe('errorHandler', () => {
     expect(res.body.error).toEqual({ code: 'AUTHOR_NOT_FOUND', message: 'Autor informado não existe' });
   });
 
+  test.each([
+    ['entity.too.large', 413, 'PAYLOAD_TOO_LARGE', 'Corpo da requisição excede o tamanho permitido'],
+    ['charset.unsupported', 415, 'UNSUPPORTED_MEDIA_TYPE', 'Tipo de conteúdo não suportado'],
+    [undefined, 400, 'BAD_REQUEST', 'Requisição inválida'],
+  ])('exposed http error %s keeps its 4xx status', (type, status, code, message) => {
+    const err = Object.assign(new Error('raw english message'), { type, status, expose: true });
+
+    const { res, logger } = handle(err);
+
+    expect(res.statusCode).toBe(status);
+    expect(res.body.error).toEqual({ code, message });
+    expect(logger.error).not.toHaveBeenCalled();
+  });
+
+  test('non-exposed or 5xx http errors still become 500', () => {
+    const err = Object.assign(new Error('boom'), { status: 503, expose: false });
+
+    const { res } = handle(err);
+
+    expect(res.statusCode).toBe(500);
+  });
+
   test('500 does not leak original message', () => {
     const { res, logger } = handle(new Error('relation "books" does not exist'));
 

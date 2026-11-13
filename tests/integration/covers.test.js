@@ -102,6 +102,27 @@ describe('POST /api/books/:id/cover', () => {
     expect(response.body.error.code).toBe('INVALID_FILE');
   });
 
+  test('truncated multipart body → 400 INVALID_FILE', async () => {
+    const response = await request(ctx.app)
+      .post(`/api/books/${book.id}/cover`)
+      .set('Content-Type', 'multipart/form-data; boundary=xyz')
+      .send('--xyz\r\nContent-Disposition: form-data; name="cover"; filename="a.png"\r\nContent-Type: image/png\r\n\r\nabc');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('INVALID_FILE');
+    expect(await filesInUploads()).toEqual([]);
+  });
+
+  test('multipart without boundary → 400 INVALID_FILE', async () => {
+    const response = await request(ctx.app)
+      .post(`/api/books/${book.id}/cover`)
+      .set('Content-Type', 'multipart/form-data')
+      .send('abc');
+
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('INVALID_FILE');
+  });
+
   test('upload larger than MAX_UPLOAD_SIZE_MB → 413 FILE_TOO_LARGE', async () => {
     const tooLarge = Buffer.alloc(ctx.config.MAX_UPLOAD_SIZE_MB * 1024 * 1024 + 1);
 

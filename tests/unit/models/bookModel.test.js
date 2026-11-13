@@ -77,6 +77,13 @@ describe('bookBodySchema', () => {
     expect(parse({ authorId: 2147483648 }).success).toBe(false);
   });
 
+  test('rejects NUL byte in title', () => {
+    const result = parse({ title: 'Dom\u0000Casmurro' });
+
+    expect(result.success).toBe(false);
+    expect(result.error.issues[0].message).toBe('Texto contém caracteres inválidos');
+  });
+
   test('rejects missing genre', () => {
     const { genre, ...withoutGenre } = validBook;
 
@@ -93,6 +100,14 @@ describe('bookListQuerySchema', () => {
       title: 'dom',
       genre: 'rom',
     });
+  });
+
+  test('treats empty authorId as absent', () => {
+    expect(bookListQuerySchema.parse({ title: '', genre: '', authorId: '' })).toEqual({ page: 1, limit: 10 });
+  });
+
+  test('rejects NUL byte in text filter', () => {
+    expect(bookListQuerySchema.safeParse({ title: 'a\u0000b' }).success).toBe(false);
   });
 
   test('rejects authorId above INTEGER range', () => {
