@@ -33,7 +33,8 @@ export function createApp({ db, config, fileStorage, logger = console }) {
   });
 
   const app = express();
-  app.use(cors({ origin: config.CORS_ORIGIN }));
+  // exposedHeaders: sem isso o navegador esconde o header Location das respostas 201.
+  app.use(cors({ origin: config.CORS_ORIGIN, exposedHeaders: ['Location'] }));
   app.use(express.json());
   app.use('/uploads', express.static(config.UPLOAD_DIR));
   app.use('/api', createRoutes({ authorController, bookController, upload }));

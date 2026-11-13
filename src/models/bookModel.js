@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import {
   bodyIdSchema,
-  coercedIdSchema,
+  optionalIdFilter,
   optionalTextFilter,
   paginationShape,
   trimmedText,
@@ -44,7 +44,7 @@ export const bookListQuerySchema = z.object({
   ...paginationShape,
   title: optionalTextFilter,
   genre: optionalTextFilter,
-  authorId: coercedIdSchema.optional(),
+  authorId: optionalIdFilter,
 });
 
 export function toBook(row) {

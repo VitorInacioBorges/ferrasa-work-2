@@ -104,6 +104,21 @@ describe('errorHandler', () => {
     expect(logger.error).not.toHaveBeenCalled();
   });
 
+  test('router URIError with status 400 becomes BAD_REQUEST', () => {
+    const err = Object.assign(new URIError("Failed to decode param '%E0%A4%A'"), { status: 400, statusCode: 400 });
+
+    const { res } = handle(err);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error.code).toBe('BAD_REQUEST');
+  });
+
+  test('4xx error explicitly marked expose=false becomes 500', () => {
+    const err = Object.assign(new Error('internal'), { status: 400, expose: false });
+
+    expect(handle(err).res.statusCode).toBe(500);
+  });
+
   test('non-exposed or 5xx http errors still become 500', () => {
     const err = Object.assign(new Error('boom'), { status: 503, expose: false });
 

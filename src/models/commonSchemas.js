@@ -19,10 +19,16 @@ export const paginationShape = {
   limit: z.coerce.number().int().min(1).max(100).default(10),
 };
 
-export const trimmedText = (min, max) => z.string().trim().min(min).max(max);
+// O Postgres não aceita o caractere NUL em textos; barramos antes de chegar ao banco.
+const withoutNul = (schema) =>
+  schema.refine((value) => !value.includes('\u0000'), { message: 'Texto contém caracteres inválidos' });
 
-// Filtro de texto opcional na query: "?name=" vazio é tratado como ausente.
-export const optionalTextFilter = z.preprocess(
-  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
-  z.string().trim().max(255).optional(),
-);
+export const trimmedText = (min, max) => withoutNul(z.string().trim().min(min).max(max));
+
+// Formulários costumam enviar filtros vazios ("?authorId="): tratamos como ausentes.
+const emptyToUndefined = (schema) =>
+  z.preprocess((value) => (typeof value === 'string' && value.trim() === '' ? undefined : value), schema);
+
+export const optionalTextFilter = emptyToUndefined(withoutNul(z.string().trim().max(255)).optional());
+
+export const optionalIdFilter = emptyToUndefined(coercedIdSchema.optional());

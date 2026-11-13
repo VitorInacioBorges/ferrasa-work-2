@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import multer from 'multer';
-import { InvalidFileError } from '../errors/AppError.js';
+import { AppError, InvalidFileError } from '../errors/AppError.js';
 
 const EXTENSION_BY_MIMETYPE = {
   'image/jpeg': '.jpg',
@@ -31,9 +31,21 @@ export function createUploadMiddleware({ uploadDir, maxSizeMb }) {
     filename: (req, file, cb) => cb(null, `${randomUUID()}${EXTENSION_BY_MIMETYPE[file.mimetype]}`),
   });
 
-  return multer({
+  const handleUpload = multer({
     storage,
     limits: { fileSize: maxSizeMb * 1024 * 1024 },
     fileFilter: imageFileFilter,
   }).single('cover');
+
+  // Corpo multipart malformado (sem boundary, cortado no meio) chega como Error comum do
+  // parser. Isso é erro do cliente: vira 400 INVALID_FILE. Erros de disco (com syscall)
+  // e os já tratados (AppError, MulterError) seguem como estão.
+  return (req, res, next) => {
+    handleUpload(req, res, (err) => {
+      if (err && !(err instanceof AppError) && err.name !== 'MulterError' && !err.syscall) {
+        return next(new InvalidFileError('Corpo multipart inválido'));
+      }
+      return next(err);
+    });
+  };
 }
