@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* Paleta de cores*/
+@theme static {
+  --color-background: #f7f4ee;
+  --color-surface: #faf8f4;
+  --color-primary: #596638;
+  --color-primary-hover: #48542d;
+  --color-on-primary: #fffdf7;
+  --color-heading: #302a25;
+  --color-body: #3e3e40;
+  --color-muted: #606166;
+  --color-border: #ccc8c0;
+  --color-divider: #e1dcd4;
+  --color-wood-light: #efd1a7;
+  --color-wood: #d5a56e;
+  --color-wood-dark: #b88753;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-serif);
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+}
