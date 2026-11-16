@@ -1,13 +1,47 @@
-import { Link, NavLink } from 'react-router'
+import { BookOpen } from "lucide-react";
+import { Link, NavLink, useMatch } from "react-router";
 
-const navLinkClassName = 'rounded-xs border-b-[3px] border-transparent px-1.5 pt-1.25 pb-2 text-xl leading-[1.2] text-body no-underline transition-colors duration-150 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-5 focus-visible:outline-primary aria-[current=page]:border-primary aria-[current=page]:font-bold aria-[current=page]:text-primary min-[541px]:text-[22px]'
-
+const navLinkClassName =
+  "rounded-xs border-b-2 border-transparent px-1 py-1 text-md text-body no-underline transition-colors duration-150 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary aria-[current=page]:border-primary aria-[current=page]:font-semibold aria-[current=page]:text-primary"
 const Header = () => {
-  return (
-    <header >
-      Header
-    </header>
-  )
-}
+  const isCollection = useMatch("/");
+  const isBook = useMatch("/livros/*");
 
-export default Header
+  return (
+    <header className="flex min-h-16 items-center gap-2.5 bg-background px-3 py-2 sm:gap-10 sm:px-15">
+      <Link
+        to="/"
+        aria-label="Biblioteca — início"
+        className="flex shrink-0 items-center gap-2 rounded-xs leading-none font-bold tracking-tight whitespace-nowrap text-heading no-underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary sm:gap-3 sm:text-[32px]"
+      >
+        <BookOpen
+          strokeWidth={1.6}
+          aria-hidden="true"
+          focusable="false"
+          className="h-7 w-8 shrink-0 text-primary sm:h-9 sm:w-11"
+        />
+        <span className="text-lg">Biblioteca</span>
+      </Link>
+
+      <span aria-hidden="true" className="h-7 w-px shrink-0 bg-border" />
+
+      <nav
+        aria-label="Navegação principal"
+        className="flex  items-center gap-2 sm:gap-8"
+      >
+        <Link
+          to="/"
+          aria-current={isCollection || isBook ? "page" : undefined}
+          className={navLinkClassName}
+        >
+          Acervo
+        </Link>
+        <NavLink to="/autores" className={navLinkClassName}>
+          Autores
+        </NavLink>
+      </nav>
+    </header>
+  );
+};
+
+export default Header;

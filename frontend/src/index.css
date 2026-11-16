@@ -18,6 +18,10 @@
 }
 
 @layer base {
+  html {
+    font-family: var(--font-serif);
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
