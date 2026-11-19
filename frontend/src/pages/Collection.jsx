@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ChevronDown, Plus, Search } from "lucide-react";
 import BookCard from "../components/BookCard.jsx";
+import { PrimaryButton } from "../components/PrimaryButton.jsx";
+import { TextButton } from "../components/TextButton.jsx";
 import CollectionMessage from "../components/CollectionMessage.jsx";
 import Pagination from "../components/Pagination.jsx";
 import { listBooks, listAuthors } from "../services/api.js";
@@ -9,10 +11,6 @@ import brasCubas from "../assets/bras-cubas.png";
 
 // Usa a mesma quantidade para o limite da API e para os cartões exibidos durante o carregamento.
 const PAGE_SIZE = 12;
-const primaryButtonClassName =
-  "inline-flex cursor-pointer items-center justify-center gap-2.5 rounded-[7px] border border-primary bg-primary leading-[1.3] text-on-primary no-underline transition-colors duration-150 hover:bg-primary-hover";
-const clearButtonClassName =
-  "shrink-0 cursor-pointer text-sm text-primary underline underline-offset-3 hover:text-primary-hover";
 // Ajusta as colunas por tamanho de tela e fornece a largura das capas aos componentes BookCard.
 const shelfClassName =
   "grid grid-cols-2 gap-y-6 [--cover-width:min(180px,calc((100vw_-_32px)/2_-_24px))] sm:grid-cols-3 sm:[--cover-width:min(180px,calc((100vw_-_80px)/3_-_28px))] lg:grid-cols-4 lg:[--cover-width:180px] xl:grid-cols-6 xl:[--cover-width:min(180px,calc((100vw_-_80px)/6_-_28px))]";
@@ -146,12 +144,12 @@ const Collection = () => {
                 className="h-12 w-full min-w-0 text-base outline-none placeholder:text-muted placeholder:opacity-100"
               />
             </div>
-            <button
-              className={`${primaryButtonClassName} w-full px-7 py-2 text-sm sm:w-auto sm:text-base`}
+            <PrimaryButton
+              className="w-full px-7 py-2 text-sm sm:w-auto sm:text-base"
               type="submit"
             >
               Pesquisar
-            </button>
+            </PrimaryButton>
           </div>
           <div className="mt-4.5 flex items-center gap-3.5 sm:gap-8">
             <div className="relative min-w-0 flex-1 sm:w-85 sm:max-w-full sm:flex-none">
@@ -172,7 +170,7 @@ const Collection = () => {
                 {/* Preserva a seleção da URL mesmo quando o autor ainda não está disponível na lista. */}
                 {authorId &&
                   !authors.some((author) => String(author.id) === authorId) && (
-                    <option value={authorId}>Autor selecionado</option>
+                    <option value={authorId}>Caregando autor...</option>
                   )}
                 {authors.map((author) => (
                   <option key={author.id} value={author.id}>
@@ -186,9 +184,7 @@ const Collection = () => {
                 aria-hidden="true"
               />
             </div>
-            <button
-              type="button"
-              className={clearButtonClassName}
+            <TextButton
               onClick={(event) => {
                 // Descarta também o texto ainda não enviado; limpar a URL remove filtros e página.
                 event.currentTarget.form.reset();
@@ -196,18 +192,16 @@ const Collection = () => {
               }}
             >
               Limpar filtros
-            </button>
+            </TextButton>
           </div>
           {authorsError && (
             <p className="mt-2 text-sm" role="alert">
               Não foi possível carregar os autores.{" "}
-              <button
-                type="button"
-                className={clearButtonClassName}
+              <TextButton
                 onClick={() => setRetry((value) => value + 1)}
               >
                 Tentar novamente
-              </button>
+              </TextButton>
             </p>
           )}
         </form>
@@ -230,9 +224,10 @@ const Collection = () => {
             className="hidden h-px flex-1 bg-divider sm:block"
             aria-hidden="true"
           />
-          <Link
+          <PrimaryButton
+            as={Link}
             to="/livros/cadastrar"
-            className={`${primaryButtonClassName} shrink-0 px-2.5 py-2 text-sm sm:px-4.5 sm:py-1.75 sm:text-base`}
+            className="shrink-0 px-2.5 py-2 text-sm sm:px-4.5 sm:py-1.75 sm:text-base"
           >
             <Plus
               className="w-4.5 sm:w-[23px]"
@@ -241,7 +236,7 @@ const Collection = () => {
               aria-hidden="true"
             />
             Cadastrar livro
-          </Link>
+          </PrimaryButton>
           {/* A contagem considera todos os resultados da busca; role="status" anuncia suas mudanças. */}
           <p
             className="w-full text-sm whitespace-nowrap text-muted lg:w-auto"
@@ -269,12 +264,12 @@ const Collection = () => {
             title="Não foi possível carregar o acervo"
             description="Verifique sua conexão e tente novamente."
           >
-            <button
-              className={`${primaryButtonClassName} mt-2 px-7 py-2 text-sm sm:text-base`}
+            <PrimaryButton
+              className="mt-2 px-7 py-2 text-sm sm:text-base"
               onClick={() => setRetry((value) => value + 1)}
             >
               Tentar novamente
-            </button>
+            </PrimaryButton>
           </CollectionMessage>
         ) : books.length === 0 ? (
           <CollectionMessage
@@ -295,12 +290,11 @@ const Collection = () => {
           >
             {/* Em uma página posterior vazia, permite voltar ao início mantendo os filtros atuais. */}
             {page > 1 && (
-              <button
-                className={clearButtonClassName}
+              <TextButton
                 onClick={() => updateFilters({ page: null })}
               >
                 Voltar à primeira página
-              </button>
+              </TextButton>
             )}
           </CollectionMessage>
         ) : (
