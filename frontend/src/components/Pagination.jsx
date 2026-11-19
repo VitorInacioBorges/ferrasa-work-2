@@ -1,7 +1,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { PageButton } from "./PageButton.jsx";
 
+// Calcula os números visíveis e informa a página escolhida ao componente responsável pelos dados.
 const Pagination = ({ page, totalPages, onPageChange }) => {
+  // Uma única página ou um resultado vazio dispensa os controles de navegação.
   if (totalPages <= 1) return null;
 
   // Seleciona até três páginas consecutivas próximas da atual, ajustando o intervalo nas extremidades.
@@ -27,6 +29,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       className="mt-7 flex items-center justify-center gap-2.5 sm:gap-4.5"
       aria-label="Páginas do acervo"
     >
+      {/* Bloqueia a navegação para trás quando a primeira página está selecionada. */}
       <PageButton
         aria-label="Página anterior"
         disabled={page <= 1}
@@ -34,6 +37,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       >
         <ChevronLeft size={20} aria-hidden="true" />
       </PageButton>
+      {/* Os intervalos omitidos viram reticências, e aria-current identifica a página selecionada. */}
       {pages.map((number, index) =>
         number === null ? (
           <span key={`ellipsis-${index}`}>…</span>
@@ -48,6 +52,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
           </PageButton>
         ),
       )}
+      {/* Bloqueia a navegação para frente quando a última página está selecionada. */}
       <PageButton
         aria-label="Próxima página"
         disabled={page >= totalPages}

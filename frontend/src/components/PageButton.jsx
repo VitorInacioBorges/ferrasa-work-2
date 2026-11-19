@@ -1,3 +1,5 @@
+// Padroniza os botões de paginação e destaca a página atual pelo atributo aria-current.
+// As props fornecem o clique, o nome acessível e o bloqueio nas extremidades da lista.
 export function PageButton(props) {
   return (
     <button
