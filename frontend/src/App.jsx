@@ -13,7 +13,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Collection />} />
           <Route path="/autores" element={<Authors />} />
-          <Route path="/livros/cadastrar" element={<BookRegister />} />
+          <Route path="/livros/cadastrar" element={<BookRegister key="create" />} />
+          <Route path="/livros/:id/editar" element={<BookRegister key="edit" />} />
           <Route path="/autores/cadastrar" element={<AuthorRegister />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
