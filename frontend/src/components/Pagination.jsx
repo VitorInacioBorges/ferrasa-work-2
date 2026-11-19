@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { PageButton } from "./PageButton.jsx";
 
-const pageButtonClassName =
-  "flex h-9 min-w-9 cursor-pointer items-center justify-center rounded-md border border-border text-sm text-primary enabled:hover:not-aria-[current=page]:bg-divider aria-[current=page]:border-primary aria-[current=page]:bg-primary aria-[current=page]:text-on-primary disabled:cursor-default disabled:opacity-40";
-
+// Calcula os números visíveis e informa a página escolhida ao componente responsável pelos dados.
 const Pagination = ({ page, totalPages, onPageChange }) => {
+  // Uma única página ou um resultado vazio dispensa os controles de navegação.
   if (totalPages <= 1) return null;
 
   // Seleciona até três páginas consecutivas próximas da atual, ajustando o intervalo nas extremidades.
@@ -29,40 +29,37 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       className="mt-7 flex items-center justify-center gap-2.5 sm:gap-4.5"
       aria-label="Páginas do acervo"
     >
-      <button
-        type="button"
-        className={pageButtonClassName}
+      {/* Bloqueia a navegação para trás quando a primeira página está selecionada. */}
+      <PageButton
         aria-label="Página anterior"
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
         <ChevronLeft size={20} aria-hidden="true" />
-      </button>
+      </PageButton>
+      {/* Os intervalos omitidos viram reticências, e aria-current identifica a página selecionada. */}
       {pages.map((number, index) =>
         number === null ? (
           <span key={`ellipsis-${index}`}>…</span>
         ) : (
-          <button
+          <PageButton
             key={number}
-            type="button"
-            className={pageButtonClassName}
             aria-label={`Página ${number}`}
             aria-current={number === page ? "page" : undefined}
             onClick={() => onPageChange(number)}
           >
             {number}
-          </button>
+          </PageButton>
         ),
       )}
-      <button
-        type="button"
-        className={pageButtonClassName}
+      {/* Bloqueia a navegação para frente quando a última página está selecionada. */}
+      <PageButton
         aria-label="Próxima página"
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
       >
         <ChevronRight size={20} aria-hidden="true" />
-      </button>
+      </PageButton>
     </nav>
   );
 };

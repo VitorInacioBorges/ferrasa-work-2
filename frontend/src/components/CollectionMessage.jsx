@@ -1,5 +1,7 @@
 import { BookOpen } from "lucide-react";
 
+// Padroniza os avisos de acervo vazio e falha no carregamento.
+// O role recebido permite anunciar erros aos leitores de tela quando a página precisar.
 const CollectionMessage = ({ title, description, children, role }) => (
   <div
     className="flex flex-col items-center gap-3.5 px-4 py-16 text-center text-muted"

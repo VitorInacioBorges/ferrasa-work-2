@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 
-const BookCard = ({ coverUrl, title, authorName, loading = false }) => {
+// Apresenta o livro na prateleira e delega a abertura dos detalhes à página do acervo.
+const BookCard = ({ coverUrl, title, authorName, onOpen, loading = false }) => {
   // Guarda a URL que falhou para exibir a alternativa, permitindo tentar uma nova capa se a prop mudar.
   const [failedCover, setFailedCover] = useState(null);
 
@@ -12,7 +13,7 @@ const BookCard = ({ coverUrl, title, authorName, loading = false }) => {
 
   return (
     // Os espaços reservados de carregamento são decorativos e ficam ocultos dos leitores de tela.
-    <article className="flex w-full flex-col items-center text-center gap-4.5" aria-hidden={loading || undefined}>
+    <article className="relative flex w-full flex-col items-center text-center gap-4.5" aria-hidden={loading || undefined}>
       <div className={coverStageClassName}>
         {/* Prioriza o carregamento; depois, exibe a capa válida ou a alternativa para capa ausente/com erro. */}
         {loading ? (
@@ -45,7 +46,11 @@ const BookCard = ({ coverUrl, title, authorName, loading = false }) => {
       ) : (
         <div className="w-full px-2 sm:px-3">
           <h3 className="text-sm leading-tight font-bold wrap-break-word text-heading sm:text-base mx-auto max-w-50">
-            {title}
+            {/* O botão funciona pelo teclado e seu pseudoelemento estende a área clicável ao cartão. */}
+            <button type="button" aria-haspopup="dialog" onClick={onOpen}
+              className="cursor-pointer hover:underline after:absolute after:inset-0 after:z-10 focus-visible:after:outline-2 focus-visible:after:outline-primary">
+              {title}
+            </button>
           </h3>
           <p className="mt-1 text-xs leading-tight wrap-break-word text-muted sm:text-sm">
             {authorName}
