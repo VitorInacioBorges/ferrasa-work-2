@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ChevronDown, Plus, Search } from "lucide-react";
 import BookCard from "../components/BookCard.jsx";
+import BookDetailsModal from "../components/BookDetailsModal.jsx";
 import { PrimaryButton } from "../components/PrimaryButton.jsx";
 import { TextButton } from "../components/TextButton.jsx";
 import CollectionMessage from "../components/CollectionMessage.jsx";
 import Pagination from "../components/Pagination.jsx";
 import { listBooks, listAuthors } from "../services/api.js";
-import brasCubas from "../assets/bras-cubas.png";
+import { splitFieldErrors } from "../services/fieldErrors.js";
+import FieldErrors from "../components/FieldErrors.jsx";
 
 // Usa a mesma quantidade para o limite da API e para os cartões exibidos durante o carregamento.
 const PAGE_SIZE = 12;
@@ -16,6 +18,7 @@ const shelfClassName =
   "grid grid-cols-2 gap-y-6 [--cover-width:min(180px,calc((100vw_-_32px)/2_-_24px))] sm:grid-cols-3 sm:[--cover-width:min(180px,calc((100vw_-_80px)/3_-_28px))] lg:grid-cols-4 lg:[--cover-width:180px] xl:grid-cols-6 xl:[--cover-width:min(180px,calc((100vw_-_80px)/6_-_28px))]";
 
 const Collection = () => {
+  const [selectedBook, setSelectedBook] = useState(null);
   // Mantém filtros e página na URL para preservar a busca ao recarregar ou compartilhar o endereço.
   const [searchParams, setSearchParams] = useSearchParams();
   const title = searchParams.get("title") || "";
@@ -54,10 +57,10 @@ const Collection = () => {
         if (!controller.signal.aborted)
           setResult({ key: requestKey, books, meta });
       })
-      .catch(() => {
+      .catch((cause) => {
         // Cancelar uma busca faz parte da navegação e não deve gerar uma mensagem de erro.
         if (!controller.signal.aborted)
-          setResult({ key: requestKey, error: true });
+          setResult({ key: requestKey, error: splitFieldErrors(cause.response?.data?.error, ["title", "authorId"]) });
       });
     // Cancela a busca ao trocar a consulta ou sair da página, evitando atualizações de respostas antigas.
     return () => controller.abort();
@@ -123,29 +126,34 @@ const Collection = () => {
           aria-label="Buscar livros"
         >
           <div className="flex flex-wrap gap-2.5 sm:flex-nowrap sm:gap-3.5">
-            <div className="flex min-w-0 flex-1 basis-full items-center gap-2.5 rounded-[7px] border border-border bg-white/20 px-3 text-muted shadow-[0_1px_2px_#302a2514] focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary sm:basis-auto sm:gap-4 sm:px-4">
-              <Search
-                className="shrink-0"
-                size={24}
-                strokeWidth={1.6}
-                aria-hidden="true"
-              />
-              <label htmlFor="book-search" className="sr-only">
-                Título do livro
-              </label>
-              {/* O texto digitado só é aplicado à busca quando o formulário é enviado. */}
-              <input
-                id="book-search"
-                name="title"
-                type="search"
-                maxLength={255}
-                defaultValue={title}
-                placeholder="Buscar pelo título do livro..."
-                className="h-12 w-full min-w-0 text-base outline-none placeholder:text-muted placeholder:opacity-100"
-              />
+            <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+              <div className="flex items-center gap-2.5 rounded-[7px] border border-border bg-white/20 px-3 text-muted shadow-[0_1px_2px_#302a2514] focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-primary sm:gap-4 sm:px-4">
+                <Search
+                  className="shrink-0"
+                  size={24}
+                  strokeWidth={1.6}
+                  aria-hidden="true"
+                />
+                <label htmlFor="book-search" className="sr-only">
+                  Título do livro
+                </label>
+                {/* O texto digitado só é aplicado à busca quando o formulário é enviado. */}
+                <input
+                  id="book-search"
+                  aria-invalid={error?.fields?.title ? true : undefined}
+                  aria-describedby={error?.fields?.title && "search-title-errors"}
+                  name="title"
+                  type="search"
+                  maxLength={255}
+                  defaultValue={title}
+                  placeholder="Buscar pelo título do livro..."
+                  className="h-12 w-full min-w-0 text-base outline-none placeholder:text-muted placeholder:opacity-100"
+                />
+              </div>
+              <FieldErrors id="search-title-errors" messages={error?.fields?.title} />
             </div>
             <PrimaryButton
-              className="w-full px-7 py-2 text-sm sm:w-auto sm:text-base"
+              className="w-full self-start px-7 py-2 text-sm sm:w-auto sm:text-base"
               type="submit"
             >
               Pesquisar
@@ -159,6 +167,8 @@ const Collection = () => {
               {/* A seleção de autor é aplicada imediatamente e reinicia a paginação. */}
               <select
                 id="author-filter"
+                aria-invalid={error?.fields?.authorId ? true : undefined}
+                aria-describedby={error?.fields?.authorId && "search-author-errors"}
                 value={authorId}
                 onChange={(event) =>
                   updateFilters({ authorId: event.target.value, page: null })
@@ -194,6 +204,7 @@ const Collection = () => {
               Limpar filtros
             </TextButton>
           </div>
+          <FieldErrors id="search-author-errors" messages={error?.fields?.authorId} />
           {authorsError && (
             <p className="mt-2 text-sm" role="alert">
               Não foi possível carregar os autores.{" "}
@@ -245,7 +256,7 @@ const Collection = () => {
             {loading
               ? "Carregando acervo…"
               : error
-                ? "Acervo indisponível"
+                ? Object.keys(error.fields).length ? "Verifique os filtros." : "Acervo indisponível"
                 : `${meta.total} ${meta.total === 1 ? "livro encontrado" : "livros encontrados"}`}
           </p>
         </div>
@@ -259,10 +270,10 @@ const Collection = () => {
             ))}
           </div>
         ) : error ? (
-          <CollectionMessage
+          (error.general || !Object.keys(error.fields).length) && <CollectionMessage
             role="alert"
             title="Não foi possível carregar o acervo"
-            description="Verifique sua conexão e tente novamente."
+            description={error.general || "Verifique sua conexão e tente novamente."}
           >
             <PrimaryButton
               className="mt-2 px-7 py-2 text-sm sm:text-base"
@@ -303,9 +314,10 @@ const Collection = () => {
             {books.map((book) => (
               <BookCard
                 key={book.id}
-                coverUrl={brasCubas}
+                coverUrl={book.coverUrl}
                 title={book.title}
                 authorName={book.author.name}
+                onOpen={() => setSelectedBook(book)}
               />
             ))}
           </div>
@@ -320,6 +332,15 @@ const Collection = () => {
           />
         )}
       </section>
+      {selectedBook && (
+        <BookDetailsModal book={selectedBook} onClose={() => setSelectedBook(null)}
+          onDeleted={() => {
+            setSelectedBook(null);
+            if (books.length === 1 && page > 1) updateFilters({ page: page - 1 });
+            setRetry((value) => value + 1);
+          }}
+        />
+      )}
     </div>
   );
 };
