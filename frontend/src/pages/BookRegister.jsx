@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { ArrowLeft } from "lucide-react";
 import FormField from "../components/FormField.jsx";
+import AuthorPicker from "../components/AuthorPicker.jsx";
 import ImageFileInput from "../components/ImageFileInput.jsx";
 import { PrimaryButton } from "../components/PrimaryButton.jsx";
 import { TextButton } from "../components/TextButton.jsx";
@@ -52,6 +53,7 @@ function BookForm({ initialBook }) {
   const editing = Boolean(initialBook);
   const navigate = useNavigate();
   const [authors, setAuthors] = useState([]);
+  const [author, setAuthor] = useState(initialBook?.author ?? null);
   const [authorsStatus, setAuthorsStatus] = useState("loading");
   const [attempt, setAttempt] = useState(0);
   const [cover, setCover] = useState(null);
@@ -79,6 +81,7 @@ function BookForm({ initialBook }) {
     event.preventDefault();
     if (saving) return;
     const form = event.currentTarget;
+    form.elements.authorId.setCustomValidity(author ? "" : "Selecione um autor da lista.");
     const invalid = Array.from(form.elements).filter((field) => field.willValidate && !field.validity.valid);
     if (invalid.length) {
       setFieldErrors((previous) => ({
@@ -97,7 +100,7 @@ function BookForm({ initialBook }) {
       if (!id) {
         const values = {
           title: data.get("title").trim(),
-          authorId: Number(data.get("authorId")),
+          authorId: Number(author.id),
           isbn: data.get("isbn"),
           genre: data.get("genre").trim(),
           publicationYear: Number(data.get("publicationYear")),
@@ -189,29 +192,16 @@ function BookForm({ initialBook }) {
               />
             </div>
             <div className="sm:col-span-2">
-              <FormField
-                label="Autor"
-                name="authorId"
+              <AuthorPicker
+                authors={authors}
+                status={authorsStatus}
+                selected={author}
                 errors={fieldErrors.authorId}
-                required
-                defaultValue={initialBook?.author.id ?? ""}
-                disabled={!authors.length}
-              >
-                <option value="" disabled>
-                  {authorsStatus === "loading"
-                    ? "Carregando autores…"
-                    : authorsStatus === "error"
-                      ? "Autores indisponíveis"
-                      : authors.length
-                        ? "Selecione um autor"
-                        : "Nenhum autor cadastrado"}
-                </option>
-                {authors.map((author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name}
-                  </option>
-                ))}
-              </FormField>
+                onSelect={(value) => {
+                  setAuthor(value);
+                  if (value) setFieldErrors((previous) => ({ ...previous, authorId: undefined }));
+                }}
+              />
               <Link
                 to="/autores/cadastrar"
                 className="mt-1 inline-block text-sm text-primary underline sm:text-base"
@@ -265,7 +255,7 @@ function BookForm({ initialBook }) {
               defaultValue={initialBook?.publicationYear}
               errors={fieldErrors.publicationYear}
               type="number"
-              min={1450}
+              min={0}
               max={new Date().getFullYear()}
               required
               placeholder="Ex.: 1899"
