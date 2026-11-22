@@ -52,3 +52,15 @@ export async function listAuthors(signal) {
   } while (page <= totalPages);
   return authors;
 }
+
+// Huehuller: Busca uma página de autores e os dados da paginação.
+export async function listAuthorsPage(params, signal) {
+  const { data } = await api.get("/authors", { params, signal });
+  return { authors: data.data, meta: data.meta };
+}
+
+// Huehuller: Envia nome e nacionalidade e devolve o autor cadastrado.
+export async function createAuthor(author) {
+  const { data } = await api.post("/authors", author);
+  return data.data;
+}
