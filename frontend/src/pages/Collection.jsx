@@ -153,10 +153,10 @@ const Collection = () => {
               <FieldErrors id="search-title-errors" messages={error?.fields?.title} />
             </div>
             <PrimaryButton
-              className="w-full self-start px-7 py-2 text-sm sm:w-auto sm:text-base"
+              className="h-12 w-full self-start px-7 py-2 text-sm sm:w-auto sm:text-base"
               type="submit"
             >
-              Pesquisar
+            Pesquisar
             </PrimaryButton>
           </div>
           <div className="mt-4.5 flex items-center gap-3.5 sm:gap-8">
