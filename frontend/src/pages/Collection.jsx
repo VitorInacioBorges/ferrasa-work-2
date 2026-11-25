@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ChevronDown, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import AuthorPicker from "../components/AuthorPicker.jsx";
 import BookCard from "../components/BookCard.jsx";
 import BookDetailsModal from "../components/BookDetailsModal.jsx";
 import { PrimaryButton } from "../components/PrimaryButton.jsx";
@@ -161,37 +162,15 @@ const Collection = () => {
           </div>
           <div className="mt-4.5 flex items-center gap-3.5 sm:gap-8">
             <div className="relative min-w-0 flex-1 sm:w-85 sm:max-w-full sm:flex-none">
-              <label htmlFor="author-filter" className="sr-only">
-                Filtrar por autor
-              </label>
-              {/* A seleção de autor é aplicada imediatamente e reinicia a paginação. */}
-              <select
-                id="author-filter"
-                aria-invalid={error?.fields?.authorId ? true : undefined}
-                aria-describedby={error?.fields?.authorId && "search-author-errors"}
-                value={authorId}
-                onChange={(event) =>
-                  updateFilters({ authorId: event.target.value, page: null })
-                }
-                disabled={authorsError}
-                className="h-9.5 w-full cursor-pointer appearance-none rounded-md border border-border bg-white/20 pr-10 pl-4 text-sm shadow-[0_1px_2px_#302a2514]"
-              >
-                <option value="">Todos os autores</option>
-                {/* Preserva a seleção da URL mesmo quando o autor ainda não está disponível na lista. */}
-                {authorId &&
-                  !authors.some((author) => String(author.id) === authorId) && (
-                    <option value={authorId}>Caregando autor...</option>
-                  )}
-                {authors.map((author) => (
-                  <option key={author.id} value={author.id}>
-                    {author.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown
-                className="pointer-events-none absolute top-2.5 right-3.5"
-                size={18}
-                aria-hidden="true"
+              <AuthorPicker
+                variant="filter"
+                authors={authors}
+                status={authorsError ? "error" : "ready"}
+                selected={authors.find((author) => String(author.id) === authorId)
+                  ?? (authorId ? { id: authorId, name: "Carregando autor..." } : null)}
+                errors={error?.fields?.authorId}
+                describedBy={error?.fields?.authorId && "search-author-errors"}
+                onSelect={(author) => updateFilters({ authorId: author?.id, page: null })}
               />
             </div>
             <TextButton
